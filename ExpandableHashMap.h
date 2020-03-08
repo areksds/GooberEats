@@ -1,7 +1,11 @@
-// ExpandableHashMap.h
+#ifndef EXPANDABLEHASHMAP
+#define EXPANDABLEHASHMAP
 
-// Skeleton for the ExpandableHashMap class template.  You must implement the first six
-// member functions.
+#include <vector>
+#include <list>
+#include <utility>
+
+// ExpandableHashMap.h
 
 template<typename KeyType, typename ValueType>
 class ExpandableHashMap
@@ -27,31 +31,110 @@ public:
 	ExpandableHashMap& operator=(const ExpandableHashMap&) = delete;
 
 private:
+    // Functions
+    unsigned int bucketNumber(const KeyType& key) const;
+    void rehash();
+    
+    // Data members
+    int m_buckets = 8;
+    int m_size = 0;
+    double maximumLoadFactor;
+    std::vector<std::list<std::pair<KeyType,ValueType>>> m_map = std::vector<std::list<std::pair<KeyType,ValueType>>>(8);
 };
 
-ExpandableHashMap::ExpandableHashMap(double maximumLoadFactor)
-{
+template<typename KeyType, typename ValueType>
+ExpandableHashMap<KeyType, ValueType>::ExpandableHashMap(double maximumLoadFactor) : maximumLoadFactor(maximumLoadFactor) {
+   
+    if (maximumLoadFactor < 0)
+        maximumLoadFactor = 0.5;
+    
 }
 
-ExpandableHashMap::~ExpandableHashMap()
+template<typename KeyType, typename ValueType>
+ExpandableHashMap<KeyType, ValueType>::~ExpandableHashMap()
 {
+    for (typename std::vector<std::list<std::pair<KeyType,ValueType>>>::iterator i = m_map.begin(); i != m_map.end(); i++)
+    {
+        for (typename std::list<std::pair<KeyType,ValueType>>::iterator it = i->begin(); it != i->end(); it++)
+        {
+            i->erase(it);
+        }
+        m_map.erase(i);
+    }
 }
 
-void ExpandableHashMap::reset()
+template<typename KeyType, typename ValueType>
+void ExpandableHashMap<KeyType, ValueType>::reset()
 {
+    ExpandableHashMap* temp = new ExpandableHashMap(maximumLoadFactor);
+    m_map.swap(*temp);
+    delete temp;
 }
 
-int ExpandableHashMap::size() const
+template<typename KeyType, typename ValueType>
+int ExpandableHashMap<KeyType, ValueType>::size() const
 {
-    return -999;  // Delete this line and implement this function correctly
+    return m_size;
 }
 
-void ExpandableHashMap::associate(const KeyType& key, const ValueType& value)
+template<typename KeyType, typename ValueType>
+void ExpandableHashMap<KeyType, ValueType>::associate(const KeyType& key, const ValueType& value)
 {
+    ValueType* ptr = find(key);
+    if (ptr != nullptr)
+        *ptr = value;
+    else
+    {
+        if ((m_size / m_buckets) > maximumLoadFactor)
+            rehash();
+        int bucket = bucketNumber(key);
+        m_map[bucket].push_back(std::pair<KeyType, ValueType>(key,value));
+        m_size++;
+    }
+    
 }
 
-const ValueType* ExpandableHashMap::find(const KeyType& key) const
+template<typename KeyType, typename ValueType>
+const ValueType* ExpandableHashMap<KeyType, ValueType>::find(const KeyType& key) const
 {
-    return nullptr;  // Delete this line and implement this function correctly
+    int bucket = bucketNumber(key);
+    if (bucket >= 0 && bucket <= m_buckets)
+    {
+       for (typename std::list<std::pair<KeyType,ValueType>>::const_iterator it = m_map[bucket].begin(); it != m_map[bucket].end(); it++)
+        {
+           if (it->first == key)
+               return &(it->second);
+        }
+    }
+    return nullptr;
 }
+
+// PRIVATE FUNCTIONS
+
+template<typename KeyType, typename ValueType>
+unsigned int ExpandableHashMap<KeyType, ValueType>::bucketNumber(const KeyType& key) const
+{
+    unsigned int hasher(const KeyType& key);
+    unsigned int h = hasher(key);
+    return h % m_buckets;
+}
+
+template<typename KeyType, typename ValueType>
+void ExpandableHashMap<KeyType, ValueType>::rehash()
+{
+    std::vector<std::list<std::pair<KeyType,ValueType>>> tempmap = std::vector<std::list<std::pair<KeyType,ValueType>>>(m_buckets*2);
+    for (int i = 0; i < m_map.size(); i++)
+    {
+        for (typename std::list<std::pair<KeyType,ValueType>>::iterator it = m_map[i].begin(); it != m_map[i].end(); it++)
+        {
+            unsigned int hasher(const KeyType& key);
+            unsigned int h = hasher(it->first);
+            tempmap[h % (m_buckets*2)].push_back(*it);
+        }
+    }
+    m_buckets *= 2;
+    m_map.swap(tempmap);
+}
+
+#endif
 

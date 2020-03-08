@@ -4,7 +4,7 @@
 #include <functional>
 using namespace std;
 
-unsigned int hash(const GeoCoord& g)
+unsigned int hasher(const GeoCoord& g)
 {
     return std::hash<string>()(g.latitudeText + g.longitudeText);
 }
