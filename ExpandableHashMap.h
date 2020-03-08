@@ -1,5 +1,5 @@
-#ifndef EXPANDABLEHASHMAP
-#define EXPANDABLEHASHMAP
+#ifndef EXPANDABLE_HASHMAP
+#define EXPANDABLE_HASHMAP
 
 #include <vector>
 #include <list>
@@ -85,11 +85,11 @@ void ExpandableHashMap<KeyType, ValueType>::associate(const KeyType& key, const 
         *ptr = value;
     else
     {
+        m_size++;
         if ((m_size / m_buckets) > maximumLoadFactor)
             rehash();
         int bucket = bucketNumber(key);
         m_map[bucket].push_back(std::pair<KeyType, ValueType>(key,value));
-        m_size++;
     }
     
 }
@@ -98,13 +98,10 @@ template<typename KeyType, typename ValueType>
 const ValueType* ExpandableHashMap<KeyType, ValueType>::find(const KeyType& key) const
 {
     int bucket = bucketNumber(key);
-    if (bucket >= 0 && bucket <= m_buckets)
+    for (typename std::list<std::pair<KeyType,ValueType>>::const_iterator it = m_map[bucket].begin(); it != m_map[bucket].end(); it++)
     {
-       for (typename std::list<std::pair<KeyType,ValueType>>::const_iterator it = m_map[bucket].begin(); it != m_map[bucket].end(); it++)
-        {
-           if (it->first == key)
-               return &(it->second);
-        }
+       if (it->first == key)
+           return &(it->second);
     }
     return nullptr;
 }
