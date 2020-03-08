@@ -56,28 +56,29 @@ bool StreetMapImpl::load(string mapFile)
         GeoCoord key;
         for (int i = 0; i <= segments; i++)
         {
-            getline(inf,line);
-            istringstream seg(line);
             if (i > 0)
             {
                 // Reverse segments
                 GeoCoord coord1(lat2, long2);
                 GeoCoord coord2(lat1, long1);
-                StreetSegment seg(coord1,coord2,street);
-                segs.push_back(seg);
+                StreetSegment segment(coord1,coord2,street);
+                segs.push_back(segment);
                 if (i == segments)
-                    GeoCoord key(lat2,long2);
+                    key = GeoCoord(lat2,long2);
             }
             if (i < segments)
             {
+                // Get new segments
+                getline(inf,line);
+                istringstream seg(line);
                 // Segments
                 seg >> lat1 >> long1;
                 GeoCoord coord1(lat1, long1);
                 seg >> lat2 >> long2;
                 GeoCoord coord2(lat2, long2);
-                StreetSegment seg(coord1,coord2,street);
-                segs.push_back(seg);
-                GeoCoord key(lat1,long2);
+                StreetSegment segment(coord1,coord2,street);
+                segs.push_back(segment);
+                key = GeoCoord(lat1,long2);
             }
             m_map.associate(key, segs);
         }

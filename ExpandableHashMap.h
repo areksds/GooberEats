@@ -53,9 +53,9 @@ ExpandableHashMap<KeyType, ValueType>::ExpandableHashMap(double maximumLoadFacto
 template<typename KeyType, typename ValueType>
 ExpandableHashMap<KeyType, ValueType>::~ExpandableHashMap()
 {
-    for (typename std::vector<std::list<std::pair<KeyType,ValueType>>>::iterator i = m_map.begin(); i != m_map.end(); i++)
+    for (auto i = m_map.begin(); i != m_map.end(); i++)
     {
-        for (typename std::list<std::pair<KeyType,ValueType>>::iterator it = i->begin(); it != i->end(); it++)
+        for (auto it = i->begin(); it != i->end(); it++)
         {
             i->erase(it);
         }
@@ -86,10 +86,10 @@ void ExpandableHashMap<KeyType, ValueType>::associate(const KeyType& key, const 
     else
     {
         m_size++;
-        if ((m_size / m_buckets) > maximumLoadFactor)
-            rehash();
         int bucket = bucketNumber(key);
         m_map[bucket].push_back(std::pair<KeyType, ValueType>(key,value));
+        if ((static_cast<double>(m_size) / m_buckets) > maximumLoadFactor)
+            rehash();
     }
     
 }
@@ -98,7 +98,7 @@ template<typename KeyType, typename ValueType>
 const ValueType* ExpandableHashMap<KeyType, ValueType>::find(const KeyType& key) const
 {
     int bucket = bucketNumber(key);
-    for (typename std::list<std::pair<KeyType,ValueType>>::const_iterator it = m_map[bucket].begin(); it != m_map[bucket].end(); it++)
+    for (auto it = m_map[bucket].begin(); it != m_map[bucket].end(); it++)
     {
        if (it->first == key)
            return &(it->second);
@@ -122,7 +122,7 @@ void ExpandableHashMap<KeyType, ValueType>::rehash()
     std::vector<std::list<std::pair<KeyType,ValueType>>> tempmap = std::vector<std::list<std::pair<KeyType,ValueType>>>(m_buckets*2);
     for (int i = 0; i < m_map.size(); i++)
     {
-        for (typename std::list<std::pair<KeyType,ValueType>>::iterator it = m_map[i].begin(); it != m_map[i].end(); it++)
+        for (auto it = m_map[i].begin(); it != m_map[i].end(); it++)
         {
             unsigned int hasher(const KeyType& key);
             unsigned int h = hasher(it->first);
