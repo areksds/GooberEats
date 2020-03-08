@@ -21,6 +21,7 @@ class StreetMapImpl
     bool load(string mapFile);
     bool getSegmentsThatStartWith(const GeoCoord& gc, vector<StreetSegment>& segs) const;
   private:
+    void associate(GeoCoord coord1, GeoCoord coord2, string street);
     ExpandableHashMap<GeoCoord,vector<StreetSegment>> m_map;
 };
 
@@ -63,46 +64,9 @@ bool StreetMapImpl::load(string mapFile)
             seg >> lat2 >> long2;
             GeoCoord coord2(lat2, long2);
             // Normal segment
-            StreetSegment first(coord1,coord2,street);
-            vector<StreetSegment>* exist1 = m_map.find(coord1);
-            if (exist1 == nullptr)
-            {
-                vector<StreetSegment> segs;
-                segs.push_back(first);
-                m_map.associate(coord1,segs);
-            }
-            else
-            {
-                auto it = exist1->begin();
-                for (; it != exist1->end(); it++)
-                {
-                    if (*it == first)
-                        break;
-                }
-                if (it == exist1->end())
-                    exist1->push_back(first);
-            }
+            associate(coord1,coord2,street);
             // Reverse segment
-            StreetSegment reverse(coord2,coord1,street);
-            vector<StreetSegment>* exist2 = m_map.find(coord2);
-            if (exist2 == nullptr)
-            {
-                vector<StreetSegment> segs;
-                segs.push_back(reverse);
-                m_map.associate(coord2,segs);
-            }
-            else
-            {
-                auto it = exist2->begin();
-                for (; it != exist2->end(); it++)
-                {
-                    if (*it == reverse)
-                        break;
-                }
-                if (it == exist2->end())
-                    exist2->push_back(first);
-            }
-            
+            associate(coord2,coord1,street);
         }
     }
     return true;
@@ -115,6 +79,29 @@ bool StreetMapImpl::getSegmentsThatStartWith(const GeoCoord& gc, vector<StreetSe
         return false;
     segs = *search;
     return true;
+}
+
+void StreetMapImpl::associate(GeoCoord coord1, GeoCoord coord2, string street)
+{
+    StreetSegment seg(coord1,coord2,street);
+    vector<StreetSegment>* exist = m_map.find(coord1);
+    if (exist == nullptr)
+    {
+        vector<StreetSegment> segs;
+        segs.push_back(seg);
+        m_map.associate(coord1,segs);
+    }
+    else
+    {
+        auto it = exist->begin();
+        for (; it != exist->end(); it++)
+        {
+            if (*it == seg)
+                break;
+        }
+        if (it == exist->end())
+            exist->push_back(seg);
+    }
 }
 
 //******************** StreetMap functions ************************************
