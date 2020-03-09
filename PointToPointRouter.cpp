@@ -87,6 +87,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
                 while (current != start)
                 {
                     route.push_front(path[current]);
+                    totalDistanceTravelled += distanceEarthMiles(path[current].start, path[current].end);
                     current = path[current].start;
                 }
                 return DELIVERY_SUCCESS;
