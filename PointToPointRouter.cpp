@@ -1,7 +1,7 @@
 #include "provided.h"
 #include <list>
 #include <queue>
-#include <unordered_map>
+#include <map>
 #include <set>
 using namespace std;
 
@@ -18,9 +18,9 @@ public:
 private:
     struct AnalyzedCoord
     {
-        AnalyzedCoord(const GeoCoord* coord, const GeoCoord* parent = nullptr, double g = 0, double h = 0) : coord(coord), parent(parent), g(g), h(h) {}
-        const GeoCoord* coord;
-        const GeoCoord* parent;
+        AnalyzedCoord(GeoCoord coord, GeoCoord parent = GeoCoord("0","0"), double g = 0, double h = 0) : coord(coord), parent(parent), g(g), h(h) {}
+        GeoCoord coord;
+        GeoCoord parent;
         double g;
         double h;
         double f() const
@@ -63,9 +63,9 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
     set<AnalyzedCoord> closedList;
     
     // Map of path
-    unordered_map<GeoCoord,StreetSegment> path;
+    map<GeoCoord,StreetSegment> path;
     
-    AnalyzedCoord first(&start);
+    AnalyzedCoord first(start);
     
     openList.push(first);
     openListCheck.insert(first);
@@ -76,7 +76,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
         openList.pop();
         openListCheck.erase(parent);
         vector<StreetSegment> segments;
-        m_map->getSegmentsThatStartWith(*parent.coord, segments);
+        m_map->getSegmentsThatStartWith(parent.coord, segments);
         for (int i = 0; i != segments.size(); i++)
         {
             // Path found
@@ -94,18 +94,18 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
             }
             
             // Coordinate with appropriate g and h values
-            AnalyzedCoord child(&segments[i].end,&segments[i].start,parent.g + distanceEarthMiles(segments[i].start, segments[i].end),distanceEarthMiles(segments[i].end, end));
+            AnalyzedCoord child(segments[i].end,segments[i].start,parent.g + distanceEarthMiles(segments[i].start, segments[i].end),distanceEarthMiles(segments[i].end, end));
             
-            // Check if current in lists
-            if (openListCheck.find(child) != openListCheck.end() && openListCheck.find(child)->f() < child.f())
+            // Check if currently in lists
+            if (openListCheck.find(child) != openListCheck.end() && openListCheck.find(child)->f() <= child.f())
                 continue;
-            if (closedList.find(child) != closedList.end() && closedList.find(child)->f() < child.f())
+            if (closedList.find(child) != closedList.end() && closedList.find(child)->f() <= child.f())
                 continue;
             
             // Add to list
             openList.push(child);
             openListCheck.insert(child);
-            path[*child.coord] = segments[i];
+            path[segments[i].end] = segments[i];
         }
         closedList.insert(parent);
     }
