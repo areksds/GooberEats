@@ -32,6 +32,13 @@ private:
             return f() < rhs.f();
         }
     };
+    struct lessDistance
+    {
+       bool operator()(const AnalyzedCoord lhs, const AnalyzedCoord rhs) const
+        {
+            return lhs.f() < rhs.f();
+        }
+    };
     const StreetMap* m_map;
 };
 
@@ -58,8 +65,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
         return BAD_COORD;
     
     // Segments to check
-    priority_queue<AnalyzedCoord> openList;
-    set<AnalyzedCoord> openListCheck;
+    set<AnalyzedCoord,lessDistance> openList;
     set<AnalyzedCoord> closedList;
     
     // Map of path
@@ -67,14 +73,12 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
     
     AnalyzedCoord first(start);
     
-    openList.push(first);
-    openListCheck.insert(first);
+    openList.insert(first);
     
     while (!openList.empty())
     {
-        AnalyzedCoord parent = openList.top();
-        openList.pop();
-        openListCheck.erase(parent);
+        AnalyzedCoord parent = *openList.begin();
+        openList.erase(openList.begin());
         vector<StreetSegment> segments;
         m_map->getSegmentsThatStartWith(parent.coord, segments);
         for (int i = 0; i != segments.size(); i++)
@@ -97,14 +101,13 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
             AnalyzedCoord child(segments[i].end,segments[i].start,parent.g + distanceEarthMiles(segments[i].start, segments[i].end),distanceEarthMiles(segments[i].end, end));
             
             // Check if currently in lists
-            if (openListCheck.find(child) != openListCheck.end() && openListCheck.find(child)->f() <= child.f())
+            if (openList.find(child) != openList.end() && openList.find(child)->f() <= child.f())
                 continue;
             if (closedList.find(child) != closedList.end() && closedList.find(child)->f() <= child.f())
                 continue;
             
             // Add to list
-            openList.push(child);
-            openListCheck.insert(child);
+            openList.insert(child);
             path[segments[i].end] = segments[i];
         }
         closedList.insert(parent);
