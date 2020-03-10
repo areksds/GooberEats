@@ -1,6 +1,7 @@
 #include "provided.h"
 #include <list>
 #include <queue>
+#include <unordered_map>
 #include <map>
 #include <set>
 using namespace std;
@@ -16,27 +17,21 @@ public:
         list<StreetSegment>& route,
         double& totalDistanceTravelled) const;
 private:
-    struct AnalyzedCoord
+    struct queuedCoord
     {
-        AnalyzedCoord(GeoCoord coord, GeoCoord parent = GeoCoord("0","0"), double g = 0, double h = 0) : coord(coord), parent(parent), g(g), h(h) {}
+        queuedCoord(GeoCoord coord, double priority) : coord(coord), priority(priority) {}
+        bool operator==(const queuedCoord& rhs)
+        {
+            return coord == rhs.coord;
+        }
         GeoCoord coord;
-        GeoCoord parent;
-        double g;
-        double h;
-        double f() const
-        {
-            return g + h;
-        }
-        bool operator<(const AnalyzedCoord rhs) const
-        {
-            return f() < rhs.f();
-        }
+        double priority;
     };
-    struct lessDistance
+    struct greaterPriority
     {
-       bool operator()(const AnalyzedCoord lhs, const AnalyzedCoord rhs) const
+        bool operator()(const queuedCoord& lhs, const queuedCoord& rhs)
         {
-            return lhs.f() < rhs.f();
+            return lhs.priority < rhs.priority;
         }
     };
     const StreetMap* m_map;
@@ -65,57 +60,58 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
         return BAD_COORD;
     
     // Segments to check
-    set<AnalyzedCoord,lessDistance> openList;
-    set<AnalyzedCoord> closedList;
+    set<queuedCoord,greaterPriority> openList;
+    set<GeoCoord> closedList;
+            
+    // List of g's for each coordinate
+    unordered_map<GeoCoord,double> g;
     
     // Map of path
     map<GeoCoord,StreetSegment> path;
     
-    AnalyzedCoord first(start);
-    
+    queuedCoord first(start,0);
+    g[start] = 0;
     openList.insert(first);
-    
-    while (!openList.empty())
+            
+    while (openList.begin()->coord != end || !openList.empty())
     {
-        AnalyzedCoord parent = *openList.begin();
+        GeoCoord current = openList.begin()->coord;
         openList.erase(openList.begin());
+        closedList.insert(current);
         vector<StreetSegment> segments;
-        m_map->getSegmentsThatStartWith(parent.coord, segments);
+        m_map->getSegmentsThatStartWith(current, segments);
         for (int i = 0; i != segments.size(); i++)
         {
-            // Path found
-            if (segments[i].end == end)
+            g[segments[i].end] = g[current] + distanceEarthMiles(segments[i].start, segments[i].end);
+            queuedCoord child(segments[i].end,g[segments[i].end] + distanceEarthMiles(segments[i].end,end));
+            auto openCheck = openList.find(child);
+            if (openCheck != openList.end() && g[openCheck->coord] > g[segments[i].end])
+                openList.erase(openCheck);
+            auto closedCheck = closedList.find(segments[i].end);
+            if (closedCheck != closedList.end() && g[*closedCheck] > g[segments[i].end])
+                closedList.erase(closedCheck);
+            if (openCheck != openList.end() && closedCheck != closedList.end())
             {
-                path[segments[i].end] = segments[i];
-                GeoCoord current = end;
-                while (current != start)
-                {
-                    route.push_front(path[current]);
-                    totalDistanceTravelled += distanceEarthMiles(path[current].start, path[current].end);
-                    current = path[current].start;
-                }
-                return DELIVERY_SUCCESS;
+                openList.insert(child);
+                path[child.coord] = segments[i];
             }
-            
-            // Coordinate with appropriate g and h values
-            AnalyzedCoord child(segments[i].end,segments[i].start,parent.g + distanceEarthMiles(segments[i].start, segments[i].end),distanceEarthMiles(segments[i].end, end));
-            
-            // Check if currently in lists
-            if (openList.find(child) != openList.end() && openList.find(child)->f() <= child.f())
-                continue;
-            if (closedList.find(child) != closedList.end() && closedList.find(child)->f() <= child.f())
-                continue;
-            
-            // Add to list
-            openList.insert(child);
-            path[segments[i].end] = segments[i];
         }
-        closedList.insert(parent);
+    }
+            
+    if (openList.empty())
+        return NO_ROUTE;
+    
+    GeoCoord current = end;
+    while (current != start)
+    {
+        route.push_front(path[current]);
+        totalDistanceTravelled += g[current];
+        current = path[current].start;
     }
     
-    // No path found
-    return NO_ROUTE;
-}
+    return DELIVERY_SUCCESS;
+    
+    }
 
 
 //******************** PointToPointRouter functions ***************************
