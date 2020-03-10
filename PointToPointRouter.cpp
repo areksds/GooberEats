@@ -82,17 +82,36 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
         m_map->getSegmentsThatStartWith(current, segments);
         for (int i = 0; i != segments.size(); i++)
         {
-            g[segments[i].end] = g[current] + distanceEarthMiles(segments[i].start, segments[i].end);
-            queuedCoord child(segments[i].end,g[segments[i].end] + distanceEarthMiles(segments[i].end,end));
+            double newg = g[current] + distanceEarthMiles(segments[i].start, segments[i].end);
+            queuedCoord child(segments[i].end,newg + distanceEarthMiles(segments[i].end,end));
             auto openCheck = openList.find(child);
-            if (openCheck != openList.end() && g[openCheck->coord] > g[segments[i].end])
-                openList.erase(openCheck);
+            bool openExist = false;
+            if (openCheck != openList.end())
+            {
+                if (g[openCheck->coord] > newg)
+                {
+                    g.erase(openCheck->coord);
+                    openList.erase(openCheck);
+                }
+                else
+                   openExist = true;
+            }
             auto closedCheck = closedList.find(segments[i].end);
-            if (closedCheck != closedList.end() && g[*closedCheck] > g[segments[i].end])
-                closedList.erase(closedCheck);
-            if (openCheck != openList.end() && closedCheck != closedList.end())
+            bool closedExist = false;
+            if (closedCheck != closedList.end())
+            {
+                if (g[*closedCheck] > newg)
+                {
+                    g.erase(*closedCheck);
+                    closedList.erase(closedCheck);
+                }
+                else
+                    closedExist = true;
+            }
+            if (!openExist && !closedExist)
             {
                 openList.insert(child);
+                g[segments[i].end] = newg;
                 path[child.coord] = segments[i];
             }
         }
@@ -111,7 +130,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
     
     return DELIVERY_SUCCESS;
     
-    }
+}
 
 
 //******************** PointToPointRouter functions ***************************
