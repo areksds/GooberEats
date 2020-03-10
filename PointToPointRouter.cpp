@@ -19,7 +19,7 @@ private:
     struct queuedCoord
     {
         queuedCoord(GeoCoord coord, double priority) : coord(coord), priority(priority) {}
-        bool operator==(const queuedCoord& rhs)
+        bool operator==(const queuedCoord& rhs) const
         {
             return coord == rhs.coord;
         }
@@ -28,7 +28,7 @@ private:
     };
     struct greaterPriority
     {
-        bool operator()(const queuedCoord& lhs, const queuedCoord& rhs)
+        bool operator()(const queuedCoord& lhs, const queuedCoord& rhs) const
         {
             return lhs.priority < rhs.priority;
         }
