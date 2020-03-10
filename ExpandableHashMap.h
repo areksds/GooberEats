@@ -52,16 +52,7 @@ ExpandableHashMap<KeyType, ValueType>::ExpandableHashMap(double maximumLoadFacto
 
 template<typename KeyType, typename ValueType>
 ExpandableHashMap<KeyType, ValueType>::~ExpandableHashMap()
-{
-    for (auto i = m_map.begin(); i != m_map.end(); i++)
-    {
-        for (auto it = i->begin(); it != i->end(); it++)
-        {
-            i->erase(it);
-        }
-        m_map.erase(i);
-    }
-}
+{}
 
 template<typename KeyType, typename ValueType>
 void ExpandableHashMap<KeyType, ValueType>::reset()

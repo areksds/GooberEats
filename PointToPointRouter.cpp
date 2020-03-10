@@ -1,7 +1,6 @@
 #include "provided.h"
 #include <list>
 #include <queue>
-#include <unordered_map>
 #include <map>
 #include <set>
 using namespace std;
@@ -64,7 +63,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
     set<GeoCoord> closedList;
             
     // List of g's for each coordinate
-    unordered_map<GeoCoord,double> g;
+    map<GeoCoord,double> g;
     
     // Map of path
     map<GeoCoord,StreetSegment> path;
@@ -73,8 +72,10 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
     g[start] = 0;
     openList.insert(first);
             
-    while (openList.begin()->coord != end || !openList.empty())
+    while (openList.begin()->coord != end)
     {
+        if (openList.empty())
+            break;
         GeoCoord current = openList.begin()->coord;
         openList.erase(openList.begin());
         closedList.insert(current);
@@ -124,7 +125,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
     while (current != start)
     {
         route.push_front(path[current]);
-        totalDistanceTravelled += g[current];
+        totalDistanceTravelled += distanceEarthMiles(path[current].start, path[current].end);
         current = path[current].start;
     }
     
