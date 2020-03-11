@@ -39,7 +39,7 @@ private:
     int m_buckets = 8;
     int m_size = 0;
     double maximumLoadFactor;
-    std::vector<std::list<std::pair<KeyType,ValueType>>> m_map = std::vector<std::list<std::pair<KeyType,ValueType>>>(8);
+    std::vector<std::list<std::pair<KeyType,ValueType> > > m_map = std::vector<std::list<std::pair<KeyType,ValueType> > >(8);
 };
 
 template<typename KeyType, typename ValueType>
@@ -110,7 +110,7 @@ unsigned int ExpandableHashMap<KeyType, ValueType>::bucketNumber(const KeyType& 
 template<typename KeyType, typename ValueType>
 void ExpandableHashMap<KeyType, ValueType>::rehash()
 {
-    std::vector<std::list<std::pair<KeyType,ValueType>>> tempmap = std::vector<std::list<std::pair<KeyType,ValueType>>>(m_buckets*2);
+    std::vector<std::list<std::pair<KeyType,ValueType> > > tempmap = std::vector<std::list<std::pair<KeyType,ValueType> > >(m_buckets*2);
     for (int i = 0; i < m_map.size(); i++)
     {
         for (auto it = m_map[i].begin(); it != m_map[i].end(); it++)

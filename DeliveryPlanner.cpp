@@ -42,7 +42,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
      */
     
     PointToPointRouter router(sm);
-    vector<list<StreetSegment>> paths = vector<list<StreetSegment>>(optimizedDeliveries.size() + 1);
+    vector<list<StreetSegment> > paths = vector<list<StreetSegment> >(optimizedDeliveries.size() + 1);
     
     // Start from depot
     GeoCoord current = depot;

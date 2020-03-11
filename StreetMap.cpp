@@ -22,7 +22,7 @@ class StreetMapImpl
     bool getSegmentsThatStartWith(const GeoCoord& gc, vector<StreetSegment>& segs) const;
   private:
     void associate(GeoCoord coord1, GeoCoord coord2, string street);
-    ExpandableHashMap<GeoCoord,vector<StreetSegment>> m_map;
+    ExpandableHashMap<GeoCoord,vector<StreetSegment> > m_map;
 };
 
 StreetMapImpl::StreetMapImpl()
