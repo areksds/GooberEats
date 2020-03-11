@@ -42,7 +42,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
      */
     
     PointToPointRouter router(sm);
-    vector<list<StreetSegment>> paths = vector<list<StreetSegment>>(optimizedDeliveries.size());
+    vector<list<StreetSegment>> paths = vector<list<StreetSegment>>(optimizedDeliveries.size() + 1);
     
     // Start from depot
     GeoCoord current = depot;
@@ -50,7 +50,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
     // Generate street segments
     for (int i = 0; i < optimizedDeliveries.size(); i++)
     {
-        double distance;
+        double distance = 0;
         DeliveryResult generate = router.generatePointToPointRoute(current, optimizedDeliveries[i].location, paths[i], distance);
         switch (generate)
         {
@@ -65,6 +65,11 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
         }
     }
     
+    // Return path
+    double distance;
+    router.generatePointToPointRoute(optimizedDeliveries[optimizedDeliveries.size() - 1].location, depot, paths[optimizedDeliveries.size()], distance);
+    totalDistanceTravelled += distance;
+    
     // Turn segments into commands
     for (int i = 0; i < paths.size(); i++)
     {
@@ -75,30 +80,29 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
         {
             if (it->name != street)
             {
-                string newstreet = it->name;
-                double turn = angleBetween2Lines(*it, *(it--));
-                it++;
+                // Process length on one street
+                DeliveryCommand dc;
+                dc.initAsProceedCommand(direction, street, distance);
+                commands.push_back(dc);
+                
+                // Add new stretch of street
+                street = it->name;
+                direction = dir(angleOfLine(*it));
+                distance = 0;
+                
+                // Check for turns
+                double turn = angleBetween2Lines(*(--it), *(++it));
                 if (turn >= 1 && turn < 180)
                 {
-                    DeliveryCommand dc;
-                    dc.initAsTurnCommand("left", newstreet);
-                    commands.push_back(dc);
-                    continue;
+                    DeliveryCommand dt;
+                    dt.initAsTurnCommand("left", street);
+                    commands.push_back(dt);
                 }
                 else if (turn >= 180 && turn <= 359)
                 {
-                    DeliveryCommand dc;
-                    dc.initAsTurnCommand("right", newstreet);
-                    commands.push_back(dc);
-                    continue;
-                }
-                else
-                {
-                    DeliveryCommand dc;
-                    dc.initAsProceedCommand(direction, street, distance);
-                    street = newstreet;
-                    direction = dir(angleOfLine(*it));
-                    distance = 0;
+                    DeliveryCommand dt;
+                    dt.initAsTurnCommand("right", street);
+                    commands.push_back(dt);
                 }
             }
             else
@@ -106,9 +110,15 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
         }
         DeliveryCommand dc;
         dc.initAsProceedCommand(direction, street, distance);
-        DeliveryCommand dv;
-        dv.initAsDeliverCommand(optimizedDeliveries[i].item);
+        commands.push_back(dc);
+        if (i != optimizedDeliveries.size())
+        {
+            DeliveryCommand dv;
+            dv.initAsDeliverCommand(optimizedDeliveries[i].item);
+            commands.push_back(dv);
+        }
     }
+    
     
     return DELIVERY_SUCCESS;
 }
