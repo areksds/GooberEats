@@ -32,14 +32,12 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
     double& totalDistanceTravelled) const
 {
     
-    // DELIVERY OPTIMIZER
+    // Optimize route
     vector<DeliveryRequest> optimizedDeliveries;
     optimizedDeliveries = deliveries;
-    /*
     DeliveryOptimizer optimizer(sm);
     double oldCrow, newCrow;
     optimizer.optimizeDeliveryOrder(depot, optimizedDeliveries, oldCrow, newCrow);
-     */
     
     PointToPointRouter router(sm);
     vector<list<StreetSegment> > paths = vector<list<StreetSegment> >(optimizedDeliveries.size() + 1);

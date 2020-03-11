@@ -12,11 +12,11 @@ public:
         vector<DeliveryRequest>& deliveries,
         double& oldCrowDistance,
         double& newCrowDistance) const;
+private:
+    const StreetMap* sm;
 };
 
-DeliveryOptimizerImpl::DeliveryOptimizerImpl(const StreetMap* sm)
-{
-}
+DeliveryOptimizerImpl::DeliveryOptimizerImpl(const StreetMap* sm) : sm(sm) {}
 
 DeliveryOptimizerImpl::~DeliveryOptimizerImpl()
 {
@@ -28,8 +28,15 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     double& oldCrowDistance,
     double& newCrowDistance) const
 {
-    oldCrowDistance = 0;  // Delete these lines and implement this function correctly
-    newCrowDistance = 0;
+    // Calculate oldCrowDistance
+    GeoCoord current = depot;
+    for (int i = 0; i != deliveries.size(); i++)
+    {
+        oldCrowDistance += distanceEarthMiles(current, deliveries[i].location);
+        current = deliveries[i].location;
+    }
+
+    newCrowDistance = 0; // fix this
 }
 
 //******************** DeliveryOptimizer functions ****************************
