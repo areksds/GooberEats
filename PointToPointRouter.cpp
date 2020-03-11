@@ -71,7 +71,8 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
     queuedCoord first(start,0);
     g[start] = 0;
     openList.insert(first);
-            
+    
+    // A*
     while (openList.begin()->coord != end)
     {
         if (openList.empty())
