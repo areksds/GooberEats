@@ -1,5 +1,6 @@
 #include "provided.h"
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 class DeliveryOptimizerImpl
@@ -13,6 +14,7 @@ public:
         double& oldCrowDistance,
         double& newCrowDistance) const;
 private:
+    double crowDistance(const GeoCoord& start, vector<DeliveryRequest>& paths) const;
     const StreetMap* sm;
 };
 
@@ -29,14 +31,47 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     double& newCrowDistance) const
 {
     // Calculate oldCrowDistance
-    GeoCoord current = depot;
-    for (int i = 0; i != deliveries.size(); i++)
+    oldCrowDistance = crowDistance(depot,deliveries);
+    
+    // Simulated annealing
+    newCrowDistance = oldCrowDistance;
+    vector<DeliveryRequest> current = deliveries;
+    double q = 0.9;
+    int i = 0;
+    while (i < 5)
     {
-        oldCrowDistance += distanceEarthMiles(current, deliveries[i].location);
-        current = deliveries[i].location;
+        double oldDistance = crowDistance(depot,current);
+        vector<DeliveryRequest> newCombo = current;
+        random_shuffle(newCombo.begin(),newCombo.end());
+        double newDistance = crowDistance(depot,newCombo);
+        if (newDistance < oldDistance) {
+            i = 0;
+            current = newCombo;
+            if (newDistance < newCrowDistance)
+            {
+                newCrowDistance = newDistance;
+                deliveries = current;
+            }
+        } else if (newDistance >= oldDistance) {
+            double r = (rand() % 100)/10;
+            if (r < q)
+                current = newCombo;
+            i++;
+        }
+        q *= .999;
     }
+}
 
-    newCrowDistance = 0; // fix this
+double DeliveryOptimizerImpl::crowDistance(const GeoCoord& start, vector<DeliveryRequest>& paths) const
+{
+    double crowDistance = 0;
+    GeoCoord current = start;
+    for (int i = 0; i != paths.size(); i++)
+    {
+        crowDistance += distanceEarthMiles(current, paths[i].location);
+        current = paths[i].location;
+    }
+    return crowDistance;
 }
 
 //******************** DeliveryOptimizer functions ****************************
