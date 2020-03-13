@@ -1,0 +1,12 @@
+Big-O of functions;
+
+StreetMap:
+load() - The time complexity is O(N) where N is the number of lines in the map data file.
+getSegmentsThatStartWith() - The time complexity is O(1).
+
+PointToPointRouter:
+generatePointToPointRoute() - I used A*. My algorithm made use of two sets of GeoCoords as my open list and closed list (with the open list set having a priority attached to it). I also had two maps, one from GeoCoord to double (for my g values) and another from GeoCoord to StreetSegment (to store the path taken).
+
+DeliveryOptimizer:
+optimizeDeliveryOrder() - I used simulated annealing. I had two vectors of DeliveryRequests, one of which stored the current best combination and another to test a new random combination.
+
