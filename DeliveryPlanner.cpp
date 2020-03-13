@@ -103,8 +103,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
                     commands.push_back(dt);
                 }
             }
-            else
-                distance += distanceEarthMiles(it->start, it->end);
+            distance += distanceEarthMiles(it->start, it->end);
         }
         DeliveryCommand dc;
         dc.initAsProceedCommand(direction, street, distance);

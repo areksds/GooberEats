@@ -42,7 +42,12 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     {
         double oldDistance = crowDistance(depot,current);
         vector<DeliveryRequest> newCombo = current;
-        random_shuffle(newCombo.begin(),newCombo.end());
+        // Random shuffle of two items
+        int randomOne = rand() % current.size();
+        int randomTwo = rand() % current.size();
+        DeliveryRequest temp = newCombo[randomOne];
+        newCombo[randomOne] = newCombo[randomTwo];
+        newCombo[randomTwo] = temp;
         double newDistance = crowDistance(depot,newCombo);
         if (newDistance < oldDistance) {
             i = 0;
@@ -53,7 +58,7 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
                 deliveries = current;
             }
         } else if (newDistance >= oldDistance) {
-            double r = (rand() % 100)/10;
+            double r = (rand() % 101)/10;
             if (r < q)
                 current = newCombo;
             i++;
