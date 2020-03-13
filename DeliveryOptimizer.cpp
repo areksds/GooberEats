@@ -37,7 +37,11 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     vector<DeliveryRequest> current = deliveries;
     double q = 0.9;
     int i = 0;
-    while (i < 50)
+    
+    // Seed random generator
+    srand(time(0));
+    
+    while (i < 100)
     {
         double oldDistance = crowDistance(depot,current);
         vector<DeliveryRequest> newCombo = current;
