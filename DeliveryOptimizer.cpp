@@ -1,6 +1,5 @@
 #include "provided.h"
 #include <vector>
-#include <algorithm>
 using namespace std;
 
 class DeliveryOptimizerImpl
