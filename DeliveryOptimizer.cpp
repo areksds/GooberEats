@@ -45,6 +45,7 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     {
         double oldDistance = crowDistance(depot,current);
         vector<DeliveryRequest> newCombo = current;
+        
         // Random shuffle of two items
         int randomOne = rand() % current.size();
         int randomTwo = rand() % current.size();
