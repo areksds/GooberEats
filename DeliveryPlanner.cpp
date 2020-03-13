@@ -81,7 +81,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
         }
         string street = paths[i].begin()->name;
         string direction = dir(angleOfLine(*paths[i].begin()));
-        double distance = 0;
+        distance = 0;
         for (auto it = paths[i].begin(); it != paths[i].end(); it++)
         {
             if (it->name != street)
