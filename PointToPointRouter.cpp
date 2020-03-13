@@ -58,6 +58,9 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
         !m_map->getSegmentsThatStartWith(end, last))
         return BAD_COORD;
     
+    if (start == end)
+        return DELIVERY_SUCCESS;
+    
     // Segments to check
     set<queuedCoord,greaterPriority> openList;
     set<GeoCoord> closedList;

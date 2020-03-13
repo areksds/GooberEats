@@ -71,6 +71,14 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
     // Turn segments into commands
     for (int i = 0; i < paths.size(); i++)
     {
+        
+        if (paths[i].empty())
+        {
+            DeliveryCommand dv;
+            dv.initAsDeliverCommand(optimizedDeliveries[i].item);
+            commands.push_back(dv);
+            continue;
+        }
         string street = paths[i].begin()->name;
         string direction = dir(angleOfLine(*paths[i].begin()));
         double distance = 0;

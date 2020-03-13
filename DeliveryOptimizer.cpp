@@ -37,7 +37,7 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     vector<DeliveryRequest> current = deliveries;
     double q = 0.9;
     int i = 0;
-    while (i < 5)
+    while (i < 50)
     {
         double oldDistance = crowDistance(depot,current);
         vector<DeliveryRequest> newCombo = current;
@@ -62,7 +62,7 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
                 current = newCombo;
             i++;
         }
-        q *= .999;
+        q *= .9;
     }
 }
 
