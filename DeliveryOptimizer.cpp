@@ -30,6 +30,14 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     double& oldCrowDistance,
     double& newCrowDistance) const
 {
+    
+    if (deliveries.empty())
+    {
+        oldCrowDistance = 0;
+        newCrowDistance = 0;
+        return;
+    }
+    
     // Calculate oldCrowDistance
     oldCrowDistance = crowDistance(depot,deliveries);
     

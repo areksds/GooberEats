@@ -59,7 +59,12 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(
         return BAD_COORD;
     
     if (start == end)
+    {
+        list<StreetSegment> newRoute;
+        route.swap(newRoute);
+        totalDistanceTravelled = 0;
         return DELIVERY_SUCCESS;
+    }
     
     // Segments to check
     set<queuedCoord,greaterPriority> openList;

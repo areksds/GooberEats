@@ -45,6 +45,9 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
     // Start from depot
     GeoCoord current = depot;
     
+    if (deliveries.empty())
+        return DELIVERY_SUCCESS;
+    
     // Generate street segments
     for (int i = 0; i < optimizedDeliveries.size(); i++)
     {
@@ -74,6 +77,8 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
         
         if (paths[i].empty())
         {
+            if (i == optimizedDeliveries.size())
+                break;
             DeliveryCommand dv;
             dv.initAsDeliverCommand(optimizedDeliveries[i].item);
             commands.push_back(dv);
